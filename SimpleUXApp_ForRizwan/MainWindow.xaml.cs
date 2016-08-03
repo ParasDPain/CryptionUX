@@ -93,13 +93,8 @@ namespace SimpleUXApp_ForRizwan
             e.Handled = true;
         }
 
-        private async void btn_Action_Click(object sender, RoutedEventArgs e)
-        {
-            if(credentials == null)
-            {
-                var getCreds = await DialogHost.Show(dialog_about, CredsDialogClosingHandler);
-            }
-
+        private void DialogClosing(object sender, DialogClosingEventArgs eventArgs)
+        {           
             lbl_Notify.Content = "";
 
             // Fetch selected files

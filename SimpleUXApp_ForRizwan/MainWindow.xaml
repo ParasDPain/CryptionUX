@@ -20,74 +20,29 @@
     <Window.Resources>
         <local:ValueToPercentConverter x:Key="ValueToPercentConverter" />
     </Window.Resources>
-    <Grid>
-        <materialDesign:Card 
-            Padding="20"
-            VerticalAlignment="Stretch">
-            <StackPanel>
-                <DockPanel
-                        VerticalAlignment="Bottom">
-                    <Label
-                        Name="lbl_Progress"
-                        Foreground="{DynamicResource PrimaryHueLightBrush}">
-                        <Label.Content>
-                            <MultiBinding Converter="{StaticResource ValueToPercentConverter}" StringFormat="{}{0}">
-                                <Binding ElementName="pb_Progress" Path="Value"/>
-                                <Binding ElementName="pb_Progress" Path="Maximum"/>
-                            </MultiBinding>
-                        </Label.Content>
-                    </Label>
-                    <ProgressBar
-                            Name="pb_Progress"/>
-                </DockPanel>
-                
-                <Label
-                    Name="lbl_Notify"
-                    HorizontalContentAlignment="Center"
-                    FontStretch="UltraCondensed"
-                    Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
-
-                <DockPanel Margin="0,20,0,0">
-                    <Button
-                        Name="btn_Encrypt"
-                        Width="120"
-                        HorizontalAlignment="Left"
-                        Content="Encrypt"
-                        Click="btn_Action_Click"/>
-                    <Button
-                        Name="btn_Decrypt"
-                        Width="120"
-                        Style="{DynamicResource MaterialDesignRaisedAccentButton}"
-                        HorizontalAlignment="Right"
-                        Content="Decrypt"
-                        Click="btn_Action_Click"/>
-                </DockPanel>
-            </StackPanel>
-        </materialDesign:Card>
-        <!-- Credentials DialogBox -->
-        <materialDesign:DialogHost
-            Name="dialog_about"
-            Grid.Row="2"
+    <!-- Credentials DialogBox -->
+    <materialDesign:DialogHost
+            Name="dialog_about"            
             HorizontalAlignment="Center" VerticalAlignment="Center" CloseOnClickAway="true">
-            <materialDesign:DialogHost.DialogContent>
-                <StackPanel Margin="16">
-                    <StackPanel Width="350" Height="200">
-                        <Label 
+        <materialDesign:DialogHost.DialogContent>
+            <StackPanel Margin="16">
+                <StackPanel Width="350" Height="200">
+                    <Label 
                             HorizontalAlignment="Center" 
                             FontWeight="Medium"
                             FontSize="15"
                             Foreground="{DynamicResource PrimaryHueDarkBrush}"
                             Margin="0,15,0,10">
-                            Password please
-                        </Label>
-                        <PasswordBox 
+                        Password please
+                    </Label>
+                    <PasswordBox 
                             Name="txt_Password"
                             Margin="15,0,0,15" 
                             HorizontalAlignment="Center">
-                        </PasswordBox>
-                    </StackPanel>
+                    </PasswordBox>
+                </StackPanel>
 
-                    <Button 
+                <Button 
                         Name="btn_DialogClose"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         IsDefault="True"
@@ -95,8 +50,56 @@
                         MaxWidth="100"
                         Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                         Content="Submit"/>
+            </StackPanel>
+        </materialDesign:DialogHost.DialogContent>
+        <Grid>
+            <materialDesign:Card 
+            Padding="20"
+            VerticalAlignment="Stretch">
+                <StackPanel>
+                    <DockPanel
+                        VerticalAlignment="Bottom">
+                        <Label
+                        Name="lbl_Progress"
+                        Foreground="{DynamicResource PrimaryHueLightBrush}">
+                            <Label.Content>
+                                <MultiBinding Converter="{StaticResource ValueToPercentConverter}" StringFormat="{}{0}">
+                                    <Binding ElementName="pb_Progress" Path="Value"/>
+                                    <Binding ElementName="pb_Progress" Path="Maximum"/>
+                                </MultiBinding>
+                            </Label.Content>
+                        </Label>
+                        <ProgressBar
+                            Name="pb_Progress"/>
+                    </DockPanel>
+
+                    <Label
+                        Name="lbl_Notify"
+                        HorizontalContentAlignment="Center"
+                        FontStretch="UltraCondensed"
+                        Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
+
+                    <DockPanel Margin="0,20,0,0">
+                        <Button
+                            Name="btn_Encrypt"
+                            Width="120"
+                            HorizontalAlignment="Left"
+                            Content="Encrypt"
+                            Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                            materialDesign:DialogHost.DialogClosingAttached="DialogClosing"
+                            />
+                        <Button
+                            Name="btn_Decrypt"
+                            Margin="16 0 0 0"
+                            Width="120"
+                            Style="{DynamicResource MaterialDesignRaisedAccentButton}"
+                            HorizontalAlignment="Right"
+                            Content="Decrypt"
+                            Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                            />
+                    </DockPanel>
                 </StackPanel>
-            </materialDesign:DialogHost.DialogContent>
-        </materialDesign:DialogHost>
-    </Grid>
+            </materialDesign:Card>
+        </Grid>
+    </materialDesign:DialogHost>
 </Window>
