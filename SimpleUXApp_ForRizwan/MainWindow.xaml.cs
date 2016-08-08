@@ -27,7 +27,6 @@ namespace SimpleUXApp_ForRizwan
     public partial class MainWindow : Window
     {
         // TODO written encrypted text is not as expected
-        // TODO logical tree error when opening dialogHost
         UserCreds credentials;
         public MainWindow()
         {
@@ -36,7 +35,7 @@ namespace SimpleUXApp_ForRizwan
 
         private string[] SelectFile()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "All files (*)", Multiselect = true };
+            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "All files (*.*)|*.*", Multiselect = true };
             if (openFileDialog.ShowDialog() == true)
             {
                 return openFileDialog.FileNames;
@@ -87,9 +86,12 @@ namespace SimpleUXApp_ForRizwan
             return true;
         }
 
-        void CredsDialogClosingHandler(object sender, DialogClosingEventArgs e)
+        private void CredsDialogClosingHandler(object sender, DialogClosingEventArgs e)
         {
-            credentials = new UserCreds(txt_Password.SecurePassword);
+            if (e.Parameter.ToString() != "Cancel") // Ugly patch
+            {
+                credentials = new UserCreds((e.Parameter as PasswordBox).SecurePassword);
+            }
             e.Handled = true;
         }
 
@@ -97,7 +99,7 @@ namespace SimpleUXApp_ForRizwan
         {
             if(credentials == null)
             {
-                var getCreds = await DialogHost.Show(dialog_about, CredsDialogClosingHandler);
+                var getCreds = await DialogHost.Show(new PassDialog(), "RootDialog", CredsDialogClosingHandler);
             }
 
             lbl_Notify.Content = "";
