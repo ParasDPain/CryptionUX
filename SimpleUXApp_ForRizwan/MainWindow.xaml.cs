@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace SimpleUXApp_ForRizwan
 {
@@ -28,6 +31,8 @@ namespace SimpleUXApp_ForRizwan
     {
         // TODO written encrypted text is not as expected
         UserCreds credentials;
+        bool operationState; // stores shouldIEncrypt state for sharing among parallel methods
+
         public MainWindow()
         {
             InitializeComponent();
@@ -41,6 +46,65 @@ namespace SimpleUXApp_ForRizwan
                 return openFileDialog.FileNames;
             }
             return null;
+        }
+
+        private void CredsDialogClosingHandler(object sender, DialogClosingEventArgs e)
+        {
+            if (e.Parameter.ToString() != "Cancel") // Ugly patch
+            {
+                credentials = new UserCreds((e.Parameter as PasswordBox).SecurePassword);
+            }
+            e.Handled = true;
+        }
+
+        private async void btn_Action_Click(object sender, RoutedEventArgs e)
+        {
+            if (credentials == null)
+            {
+                var dialogResult = await DialogHost.Show(new PassDialog(), "RootDialog", CredsDialogClosingHandler);
+                if (dialogResult.ToString() == "Cancel")
+                {
+                    return; // exit
+                }
+            }
+
+            lbl_Notify.Content = "";
+
+            // Store button trigger state
+            operationState = ((Button)sender).Content.ToString() == "Encrypt" ? true : false;
+            HandleCryption();
+        }
+
+        private async void HandleCryption()
+        {
+            // Fetch selected files
+            string[] selectedFileNames = SelectFile();
+            if (selectedFileNames == null)
+            {
+                lbl_Notify.Content = "Please select a file(s)";
+                return;
+            }
+
+            byte[] userKey = credentials.Key;
+            byte[] userIV = credentials.IV;
+
+            // Run encryption on a separate thread
+            IProgress<double> progress = new Progress<double>(p => pb_Progress.Value = p);
+            await Dispatcher.BeginInvoke(DispatcherPriority.Background, new ThreadStart(() =>
+            {
+                for (int i = 0; i < selectedFileNames.Length; i++)
+                {
+                    if (PerformCryption(operationState, userKey, userIV, selectedFileNames[i])) // perform operation and inform user
+                    {
+                        lbl_Notify.Content = "File: " + new FileInfo(selectedFileNames[i]).Name + " successfully " + (operationState ? "encrypted" : "decrypted");
+                    }
+                    else
+                    {
+                        lbl_Notify.Content = "Something unexpected happened with " + selectedFileNames[i] + "! Please try again.";
+                    }
+                    progress.Report((i + 1) * 100 / selectedFileNames.Length); // TODO it updates but still not independently
+                }
+            }));
         }
 
         private static bool PerformCryption(bool shouldIEncrypt, byte[] key, byte[] iv, string fileName)
@@ -64,6 +128,7 @@ namespace SimpleUXApp_ForRizwan
                             }
                         }
                     }
+                    encryptor.Dispose();
                 }
                 else
                 {
@@ -85,76 +150,55 @@ namespace SimpleUXApp_ForRizwan
             }
             return true;
         }
-
-        private void CredsDialogClosingHandler(object sender, DialogClosingEventArgs e)
-        {
-            if (e.Parameter.ToString() != "Cancel") // Ugly patch
-            {
-                credentials = new UserCreds((e.Parameter as PasswordBox).SecurePassword);
-            }
-            e.Handled = true;
-        }
-
-        private async void btn_Action_Click(object sender, RoutedEventArgs e)
-        {
-            if(credentials == null)
-            {
-                var getCreds = await DialogHost.Show(new PassDialog(), "RootDialog", CredsDialogClosingHandler);
-            }
-
-            lbl_Notify.Content = "";
-
-            // Fetch selected files
-            string[] selectedFileNames = SelectFile();
-            if (selectedFileNames == null)
-            {
-                lbl_Notify.Content = "Please select a file(s)";
-                return;
-            }
-
-            // Check which button triggered the event and act accordingly
-            bool shouldIEncrypt = ((Button)sender).Content.ToString() == "Encrypt" ? true : false;
-            byte[] userKey = GetKey();
-            byte[] userIV = GetIV();
-
-            pb_Progress.Maximum = selectedFileNames.Length;
-            for (int i = 0; i < selectedFileNames.Length; i++)
-            {
-                if (PerformCryption(shouldIEncrypt, userKey, userIV, selectedFileNames[i])) // perform operation and inform user
-                {
-                    lbl_Notify.Content = "File: " + selectedFileNames[i] + " successfully " + (shouldIEncrypt ? "encrypted" : "decrypted");
-                }
-                else
-                {
-                    lbl_Notify.Content = "Something unexpected happened with " + selectedFileNames[i] + "! Please try again.";
-                }
-                pb_Progress.Value = i;
-            }
-
-        }
-
-        private byte[] GetKey()
-        {
-            return new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // stub
-        }
-
-        private byte[] GetIV()
-        {
-            using(AesManaged aes = new AesManaged())
-            {
-                return aes.IV;
-            }
-        }
     }
 }
 
+[SecuritySafeCritical]
 public class UserCreds
 {
-    byte[] Key;
-    byte[] IV;
+    private byte[] key;
+    public byte[] Key
+    {
+        get
+        {
+            return key;
+        }
+    }
+
+    private byte[] iv;
+    public byte[] IV
+    {
+        get
+        {
+            return iv;
+        }
+    }
 
     public UserCreds(SecureString input)
     {
+        using (AesManaged aes = new AesManaged())
+        {
+            byte[] salt = Encoding.ASCII.GetBytes("2659b066d1f9e0f928fea83c6f91651c76ca39b9"); // SHA1
+            Rfc2898DeriveBytes pbkdf = new Rfc2898DeriveBytes(SecureStringToString(input), salt);
 
+            key = pbkdf.GetBytes(aes.KeySize / 8);
+            iv = pbkdf.GetBytes(aes.BlockSize / 8);
+        }
+    }
+
+    // Converts the otherwise leak proof SecureString to a readable format
+    // Thanks to http://stackoverflow.com/questions/818704/how-to-convert-securestring-to-system-string
+    private string SecureStringToString(SecureString value)
+    {
+        IntPtr valuePtr = IntPtr.Zero;
+        try
+        {
+            valuePtr = Marshal.SecureStringToGlobalAllocUnicode(value);
+            return Marshal.PtrToStringUni(valuePtr);
+        }
+        finally
+        {
+            Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+        }
     }
 }

@@ -24,5 +24,11 @@ namespace SimpleUXApp_ForRizwan
         {
             InitializeComponent();
         }
+
+        // Only allow click if field is not empty
+        private void txt_Password_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            btn_DialogSubmit.IsEnabled = txt_Password.SecurePassword.Length > 0 ? true : false;
+        }
     }
 }

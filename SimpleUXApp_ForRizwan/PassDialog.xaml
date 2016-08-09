@@ -12,37 +12,37 @@
         <StackPanel Margin="16">
             <StackPanel Width="250">
                 <Label 
-                            HorizontalAlignment="Center" 
-                            FontWeight="Medium"
-                            FontSize="15"
-                            Foreground="{DynamicResource PrimaryHueDarkBrush}"
-                            Margin="0,15,0,10">
+                    HorizontalAlignment="Center" 
+                    FontWeight="Medium"
+                    FontSize="15"
+                    Foreground="{DynamicResource PrimaryHueDarkBrush}"
+                    Margin="0,15,0,10">
                     Enter Password
                 </Label>
                 <PasswordBox 
-                            Name="txt_Password"
-                            Margin="0,0,0,15"
-                            HorizontalAlignment="Stretch">
+                    Name="txt_Password"
+                    Margin="0,0,0,15"
+                    HorizontalAlignment="Stretch" PasswordChanged="txt_Password_PasswordChanged">
                 </PasswordBox>
             </StackPanel>
             <DockPanel Margin="0 8 0 0">
                 <Button 
-                        Name="btn_DialogSubmit"
-                        Style="{DynamicResource MaterialDesignRaisedAccentButton}"
-                        IsDefault="True"
-                        MaxWidth="100"
-                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                        CommandParameter="{Binding ElementName=txt_Password}"
-                        Content="Submit"/>
+                    Name="btn_DialogSubmit"
+                    Style="{DynamicResource MaterialDesignRaisedAccentButton}"
+                    IsDefault="True"
+                    IsEnabled="false"
+                    MaxWidth="100"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{Binding ElementName=txt_Password}"
+                    Content="Submit"/>
                 <Button 
-                        HorizontalAlignment="Right"
-                        Name="btn_DialogCancel"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        IsDefault="True"
-                        MaxWidth="100"
-                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                        CommandParameter="Cancel"
-                        Content="Cancel"/>
+                    HorizontalAlignment="Right"
+                    Name="btn_DialogCancel"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    MaxWidth="100"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="Cancel"
+                    Content="Cancel"/>
             </DockPanel>
         </StackPanel>
     </Grid>

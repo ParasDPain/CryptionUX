@@ -24,14 +24,14 @@
     <materialDesign:DialogHost Identifier="RootDialog">
         <Grid>
             <materialDesign:Card 
-            Padding="20"
-            VerticalAlignment="Stretch">
+                Padding="20"
+                VerticalAlignment="Stretch">
                 <StackPanel>
                     <DockPanel
                         VerticalAlignment="Bottom">
                         <Label
-                        Name="lbl_Progress"
-                        Foreground="{DynamicResource PrimaryHueLightBrush}">
+                            Name="lbl_Progress"
+                            Foreground="{DynamicResource PrimaryHueLightBrush}">
                             <Label.Content>
                                 <MultiBinding Converter="{StaticResource ValueToPercentConverter}" StringFormat="{}{0}">
                                     <Binding ElementName="pb_Progress" Path="Value"/>
@@ -44,25 +44,25 @@
                     </DockPanel>
 
                     <Label
-                    Name="lbl_Notify"
-                    HorizontalContentAlignment="Center"
-                    FontStretch="UltraCondensed"
-                    Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
+                        Name="lbl_Notify"
+                        HorizontalContentAlignment="Center"
+                        FontStretch="UltraCondensed"
+                        Foreground="{DynamicResource PrimaryHueDarkBrush}"/>
 
                     <DockPanel Margin="0,20,0,0">
                         <Button
-                        Name="btn_Encrypt"
-                        Width="120"
-                        HorizontalAlignment="Left"
-                        Style="{DynamicResource MaterialDesignRaisedAccentButton}"
-                        Content="Encrypt"
-                        Click="btn_Action_Click"/>
+                            Name="btn_Encrypt"
+                            Width="120"
+                            HorizontalAlignment="Left"
+                            Style="{DynamicResource MaterialDesignRaisedAccentButton}"
+                            Content="Encrypt"
+                            Click="btn_Action_Click"/>
                         <Button
-                        Name="btn_Decrypt"
-                        Width="120"
-                        HorizontalAlignment="Right"
-                        Content="Decrypt"
-                        Click="btn_Action_Click"/>
+                            Name="btn_Decrypt"
+                            Width="120"
+                            HorizontalAlignment="Right"
+                            Content="Decrypt"
+                            Click="btn_Action_Click"/>
                     </DockPanel>
                 </StackPanel>
             </materialDesign:Card>
